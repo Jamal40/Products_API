@@ -14,6 +14,8 @@ public class ShopContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.HasDefaultSchema("Products");
+
         #region Seeding 
 
         Product[] products = new Product[]

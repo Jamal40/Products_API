@@ -1,6 +1,6 @@
-@Products_API_HostAddress = http://localhost:5058
+@Products_API_HostAddress = https://localhost:7188
 
-GET {{Products_API_HostAddress}}/api/products
+GET https://localhost:7188/api/Products/Photo/Random/dog
 
 ##
 

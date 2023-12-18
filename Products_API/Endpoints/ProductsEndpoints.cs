@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Products_API.Data;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Products_API.Services;
 
 namespace Products_API.Endpoints;
 
@@ -63,6 +64,15 @@ public static class ProductsEndpoints
             return affected == 1 ? TypedResults.Ok() : TypedResults.NotFound();
         })
         .WithName("DeleteProduct")
+        .WithOpenApi();
+
+        group.MapGet("/Photo/Random/{query}", async Task<Ok<string>> (string query,
+            IUnsplashService unsplashService) =>
+        {
+            var photo = await unsplashService.GetRandomPhotoUrl(query);
+            return TypedResults.Ok(photo);
+        })
+        .WithName("GetRandomPhoto")
         .WithOpenApi();
     }
 

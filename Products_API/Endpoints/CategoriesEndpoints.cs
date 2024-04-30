@@ -22,7 +22,8 @@ public static class CategoriesEndpoints
                 .ToListAsync();
         })
         .WithName("GetAllCategories")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
     }
 }
 

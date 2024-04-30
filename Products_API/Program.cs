@@ -1,12 +1,13 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Polly;
-using Polly.Fallback;
 using Products_API;
 using Products_API.Data;
 using Products_API.Endpoints;
 using Products_API.Middlewares;
 using Products_API.Services;
-using System.Text.Json;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -73,6 +74,42 @@ builder.Services.AddDbContext<ShopContext>(options =>
 
 #endregion
 
+#region Identity
+
+builder.Services.AddIdentityCore<IdentityUser>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 3;
+})
+    .AddEntityFrameworkStores<ShopContext>();
+
+#endregion
+
+#region Authentication
+
+builder.Services.AddAuthentication(o =>
+{
+    o.DefaultAuthenticateScheme = "Bearer";
+    o.DefaultChallengeScheme = "Bearer";
+})
+    .AddJwtBearer("Bearer", options =>
+    {
+        var key = builder.Configuration["SecretKey"]!;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateAudience = false,
+            ValidateIssuer = false,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+#endregion
+
 #region Middlewares
 
 builder.Services.AddScoped<EnsurePrdouctsHavePhotos>();
@@ -88,9 +125,12 @@ app.UseSwaggerUI();
 
 app.UseCors(Constants.Policies.AllowAll);
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseMiddleware<EnsurePrdouctsHavePhotos>();
 app.MapProductEndpoints();
 app.MapCategoryEndpoints();
+app.MapAccountEndpoints();
 
 #endregion
 
